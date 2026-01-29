@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>整合行動系統架構互動圖</title>
+    <!-- 載入 React 與 Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+        .animate-dash {
+            stroke-dasharray: 10, 10;
+            animation: dash 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        // 定義內聯 SVG 路徑
+        const ICONS = {
+            mic: <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v3" />,
+            brain: (
+                <g>
+                    <path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.96.46 2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 12 4.5Z"/>
+                    <path d="M12 8c0-3.5 7-3.5 7 0s-7 3.5-7 7 M12 8c0-3.5-7-3.5-7 0s7 3.5 7 7 M12 4.5V8 M12 15v3"/>
+                </g>
+            ),
+            boxes: <path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-10l-4 2.4v4l-3-1.8v-4l-2.03 1.22ZM21 14.63v3.24a2 2 0 0 1-.97 1.71l-3 1.8a2 2 0 0 1-2.06 0L12 19v-10l4 2.4v4l3-1.8v-4l2.03 1.22ZM12 12l8.73-5.24a2 2 0 0 0 0-3.52L12.27 1a2 2 0 0 0-1.54 0L2.27 3.24a2 2 0 0 0 0 3.52L11 12.1v-.1Z" />,
+            "volume-2": (
+                <g>
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07 M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </g>
+            ),
+            settings: (
+                <g>
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </g>
+            ),
+            activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+            server: (
+                <g>
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                    <line x1="6" y1="6" x2="6.01" y2="6"/>
+                    <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </g>
+            ),
+            "check-circle-2": (
+                <g>
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="m9 12 2 2 4-4"/>
+                </g>
+            )
+        };
+
+        const Icon = ({ name, size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {ICONS[name]}
+            </svg>
+        );
+
+        const CANVAS_WIDTH = 1000;
+        const CANVAS_HEIGHT = 600;
+        const CENTER_X = 500;
+        const CENTER_Y = 300;
+
+        const initialNodes = [
+            { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 180, y: 200, icon: 'mic', description: '運行於 AGX Orin。接收語音指令並轉化為結構化文本。', details: ['硬體：AGX Orin (Edge)', '低延遲語音辨識', '輸入源：外部麥克風/操作端'] },
+            { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 180, y: 400, icon: 'volume-2', description: '運行於 AGX Orin。將任務狀態以語音形式報告給操作員處理。', details: ['硬體：AGX Orin (Edge)', '語音合成反饋', '狀態回傳：任務成功/失敗通知'] },
+            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'VLA Reasoning', type: 'ovx_server', x: 520, y: CENTER_Y, width: 280, height: 140, icon: 'brain', description: '運行於 OVX Server。核心大腦負責複雜指令理解與高層級任務規劃。', details: ['硬體：OVX Server (Cloud)', '模型：Vision-Language-Action 推理', '職責：全局決策與任務步奏生成'] },
+            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Exec Control Layer', type: 'agx_orin_action', x: 850, y: CENTER_Y, width: 260, height: 200, icon: 'boxes', description: '運行於 AGX Orin。統合物理世界的感知與執行，如 Solomon 辨識與 Isaac 動作。', details: ['硬體：AGX Orin (Edge)', '視覺監控：Solomon 系統', '運動控制：Isaac GR00T 執行', '實時反饋：定期報備物理狀態'] }
+        ];
+
+        const initialConnections = [
+            { from: 'stt', to: 'cosmos_core', type: 'call', label: 'Instruction' },
+            { from: 'cosmos_core', to: 'integrated_action', type: 'call', label: 'Execution Command' },
+            { from: 'integrated_action', to: 'cosmos_core', type: 'verify', label: 'State Feedback' },
+            { from: 'cosmos_core', to: 'tts', type: 'flow', label: 'Task Complete' }
+        ];
+
+        const App = () => {
+            const [selectedNode, setSelectedNode] = useState(null);
+            const [hoveredNode, setHoveredNode] = useState(null);
+
+            const activeId = hoveredNode?.id || selectedNode?.id;
+
+            const isEdgeHighlighted = (from, to) => activeId === from || activeId === to;
+            const isRelated = (id) => activeId === id || initialConnections.some(c => (c.from === activeId && c.to === id) || (c.to === activeId && c.from === id));
+
+            return (
+                <div className="flex flex-col md:flex-row h-screen w-full bg-slate-50 overflow-hidden font-sans text-slate-800">
+                    <div className="flex-1 relative overflow-auto p-6 flex flex-col items-center">
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6 w-full max-w-5xl flex justify-between items-end">
+                            <div>
+                                <h1 className="text-2xl font-black tracking-tight text-slate-800 flex items-center gap-2">
+                                    <span className="p-1.5 bg-indigo-600 rounded-lg text-white flex items-center justify-center">
+                                        <Icon name="server" size={20} />
+                                    </span>
+                                    統合行動系統架構 (Edge-to-Server)
+                                </h1>
+                                <p className="text-sm text-slate-400 font-medium">邊緣計算 (AGX Orin) ⇄ 伺服器推理 (OVX Server)</p>
+                            </div>
+                            <div className="flex gap-4 text-[10px] font-black uppercase text-slate-400">
+                                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-400" /> AGX Orin (I/O)</span>
+                                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500" /> OVX Server</span>
+                                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> AGX Orin (Action)</span>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 p-8">
+                            <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}>
+                                {/* 背景分組提示 */}
+                                <rect x="50" y="80" width="260" height="440" rx="30" fill="#f0f9ff" fillOpacity="0.5" stroke="#bae6fd" />
+                                <text x="180" y="110" textAnchor="middle" className="text-[10px] font-black fill-sky-400 uppercase tracking-widest">AGX Orin - I/O Layer</text>
+
+                                <rect x="360" y="80" width="310" height="440" rx="30" fill="#f0fdf4" fillOpacity="0.5" stroke="#bbf7d0" strokeDasharray="5,5" />
+                                <text x="515" y="110" textAnchor="middle" className="text-[10px] font-black fill-green-400 uppercase tracking-widest">OVX Server Core</text>
+
+                                <rect x="710" y="80" width="280" height="440" rx="30" fill="#fffcf0" fillOpacity="0.3" stroke="#fef3c7" />
+                                <text x="850" y="110" textAnchor="middle" className="text-[10px] font-black fill-amber-200 uppercase tracking-widest">AGX Orin - Action Zone</text>
+
+                                {initialConnections.map((conn, idx) => {
+                                    const from = initialNodes.find(n => n.id === conn.from);
+                                    const to = initialNodes.find(n => n.id === conn.to);
+                                    const high = isEdgeHighlighted(conn.from, conn.to);
+                                    const midX = (from.x + to.x) / 2;
+                                    const midY = (from.y + to.y) / 2 + (conn.type === 'verify' ? 25 : -15);
+                                    const pathD = `M ${from.x} ${from.y} Q ${midX} ${midY}, ${to.x} ${to.y}`;
+                                    
+                                    let activeColor = '#3b82f6';
+                                    if (from.type === 'ovx_server' || to.type === 'ovx_server') activeColor = '#22c55e';
+                                    if (conn.type === 'verify') activeColor = '#f59e0b';
+
+                                    return (
+                                        <g key={idx}>
+                                            <path d={pathD} fill="none" stroke={high ? activeColor : '#e2e8f0'} strokeWidth={high ? 3 : 2} strokeDasharray={conn.type === 'verify' ? "5,3" : "none"} className="transition-all duration-300" />
+                                            {high && (
+                                                <circle r={4} fill={activeColor}>
+                                                    <animateMotion dur="1s" repeatCount="indefinite" path={pathD} />
+                                                </circle>
+                                            )}
+                                        </g>
+                                    );
+                                })}
+                                {initialNodes.map(node => {
+                                    const w = node.width || 160; const h = node.height || 80;
+                                    const active = isRelated(node.id);
+                                    const isSel = selectedNode?.id === node.id;
+                                    let color = "#3b82f6";
+                                    if(node.type === 'ovx_server') color = "#22c55e";
+                                    if(node.type === 'agx_orin_action') color = "#f59e0b";
+                                    return (
+                                        <g key={node.id} transform={`translate(${node.x - w/2}, ${node.y - h/2})`} 
+                                            onClick={() => setSelectedNode(node)} 
+                                            onMouseEnter={() => setHoveredNode(node)} 
+                                            onMouseLeave={() => setHoveredNode(null)} 
+                                            className="cursor-pointer">
+                                            <rect width={w} height={h} rx={16} fill="white" stroke={active || isSel ? color : "#cbd5e1"} strokeWidth={active || isSel ? 4 : 2} className="transition-all duration-300 shadow-sm" />
+                                            <foreignObject width={w} height={h} className="pointer-events-none">
+                                                <div className="flex flex-col items-center justify-center h-full text-center px-2">
+                                                    <div className={active || isSel ? (node.type === 'ovx_server' ? "text-green-600" : "text-blue-600") : "text-slate-400"}>
+                                                        <Icon name={node.icon} size={24} />
+                                                    </div>
+                                                    <div className="text-[12px] font-bold mt-1 leading-tight">{node.label}</div>
+                                                    <div className="text-[9px] text-slate-400">{node.subTitle}</div>
+                                                </div>
+                                            </foreignObject>
+                                        </g>
+                                    )
+                                })}
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div className={`w-full md:w-96 bg-white border-l border-slate-200 shadow-2xl transition-all duration-500 ${selectedNode ? 'translate-x-0' : 'translate-x-full md:hidden'}`}>
+                        {selectedNode ? (
+                            <div className="p-8 h-full overflow-y-auto">
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className={`p-4 rounded-3xl ${selectedNode.type === 'ovx_server' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center`}>
+                                        <Icon name={selectedNode.icon} size={28} />
+                                    </div>
+                                    <button onClick={() => setSelectedNode(null)} className="text-slate-300 hover:text-slate-800 bg-slate-50 p-2 rounded-full transition-colors font-bold">✕</button>
+                                </div>
+                                <h2 className="text-3xl font-black text-slate-800 mb-1 leading-tight">{selectedNode.label}</h2>
+                                <p className="text-xs font-bold text-blue-500 mb-6 uppercase tracking-widest">
+                                    {selectedNode.type === 'ovx_server' ? 'OVX Server Core' : 'AGX Orin Edge'}
+                                </p>
+                                <div className="space-y-6">
+                                    <div className="bg-slate-50 p-5 rounded-2xl text-sm text-slate-600 font-semibold italic leading-relaxed">"{selectedNode.description}"</div>
+                                    {selectedNode.details && (
+                                        <div className="space-y-3">
+                                            {selectedNode.details.map((d, i) => (
+                                                <div key={i} className="flex items-start gap-3 bg-white border border-slate-100 p-4 rounded-2xl text-xs font-bold shadow-sm">
+                                                    <div className="text-green-500 mt-0.5"><Icon name="check-circle-2" size={16} /></div>
+                                                    <span className="leading-normal">{d}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-300 p-12 text-center">
+                                <div className="opacity-10 mb-4 animate-pulse"><Icon name="activity" size={64} /></div>
+                                <p className="text-sm font-black uppercase tracking-widest leading-loose">請點擊架構組件<br/><span className="text-[10px] font-normal lowercase opacity-60 tracking-normal">檢視各硬體層級技術細節</span></p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
