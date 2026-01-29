@@ -41,7 +41,7 @@
         const THEME = {
             nvidia: "#76b900", // NVIDIA Green
             interface: "#00b4ff", // Cyber Blue
-            action: "#ffcc00", // Action Amber
+            action: "#ff2a2a", // Action Red
             bg: "#0b0e14", // Dark Background
             glass: "rgba(255, 255, 255, 0.03)",
             border: "rgba(255, 255, 255, 0.1)"
@@ -86,7 +86,7 @@
                 return (
                     <img 
                         src="image_cosmos.png" 
-                        style={{ width: size * 1.2, height: size * 1.2, objectFit: 'contain' }} 
+                        style={{ width: size * 3, height: size * 3, objectFit: 'contain' }} 
                         className={className} 
                         alt="Cosmos Icon"
                         onError={(e) => { e.target.src = "https://via.placeholder.com/100?text=Icon+Error"; }}
@@ -109,7 +109,7 @@
         const initialNodes = [
             { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 170, y: 190, icon: 'mic', width: 220, height: 110, description: '邊緣計算層執行語音接收與轉錄。', details: ['硬體：AGX Orin (Edge)', '支援實時語音指令解析'] },
             { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 170, y: 410, icon: 'volume-2', width: 220, height: 110, description: '將任務最終狀態以語音形式反饋給操作人員。', details: ['硬體：AGX Orin (Edge)', '任務完成度語音報告'] },
-            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'VLA Logic Center', type: 'ovx_server', x: 505, y: CENTER_Y, width: 340, height: 180, icon: 'cosmos', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server (Cloud)', '技術：VLA 推理模型'] },
+            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'Reason Logic Center', type: 'ovx_server', x: 505, y: CENTER_Y, width: 340, height: 180, icon: 'cosmos', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server (Cloud)', '技術：VLA 推理模型'] },
             { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Physical Interaction', type: 'agx_orin_action', x: 850, y: CENTER_Y, width: 240, height: 220, icon: 'boxes', description: '邊緣端統合執行系統，整合感知與運動控制。', details: ['硬體：AGX Orin (Edge)', '視覺：Solomon / 動作：Isaac'] }
         ];
 
@@ -156,7 +156,7 @@
                                 <span className="flex items-center gap-2">
                                     <div className="flex gap-1">
                                         <span className="w-3.5 h-3.5 rounded-full bg-[#00b4ff]" />
-                                        <span className="w-3.5 h-3.5 rounded-full bg-[#ffcc00]" />
+                                        <span className="w-3.5 h-3.5 rounded-full bg-[#ff2a2a]" />
                                     </div>
                                     AGX Orin (Edge)
                                 </span>
@@ -172,13 +172,13 @@
                             <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}>
                                 {/* 背景裝飾 */}
                                 <rect x="30" y="70" width="280" height="460" rx="20" fill="white" fillOpacity="0.06" stroke="white" strokeOpacity="0.15" />
-                                <text x="170" y="100" textAnchor="middle" className="text-[12px] font-black fill-white/50 uppercase tracking-[0.4em]">Edge Layer</text>
+                                <text x="170" y="100" textAnchor="middle" className="text-[12px] font-black fill-white/50 uppercase tracking-[0.4em]">User Input</text>
 
                                 <rect x="320" y="70" width="370" height="460" rx="20" fill="#76b900" fillOpacity="0.04" stroke="#76b900" strokeOpacity="0.25" strokeDasharray="5,5" />
                                 <text x="505" y="100" textAnchor="middle" className="text-[12px] font-black fill-[#76b900]/60 uppercase tracking-[0.4em]">Cloud Reasoning</text>
 
-                                <rect x="710" y="70" width="280" height="460" rx="20" fill="#ffcc00" fillOpacity="0.03" stroke="#ffcc00" strokeOpacity="0.2" />
-                                <text x="850" y="100" textAnchor="middle" className="text-[12px] font-black fill-[#ffcc00]/50 uppercase tracking-[0.4em]">Action Hub</text>
+                                <rect x="710" y="70" width="280" height="460" rx="20" fill="#ff2a2a" fillOpacity="0.03" stroke="#ff2a2a" strokeOpacity="0.2" />
+                                <text x="850" y="100" textAnchor="middle" className="text-[12px] font-black fill-[#ff2a2a]/50 uppercase tracking-[0.4em]">Edge Action Hub</text>
 
                                 {initialConnections.map((conn, idx) => {
                                     const from = initialNodes.find(n => n.id === conn.from);
@@ -263,7 +263,7 @@
                                         <Icon 
                                             name={selectedNode.icon} 
                                             size={54} 
-                                            className={selectedNode.type === 'ovx_server' ? 'text-[#76b900]' : selectedNode.type === 'agx_orin_action' ? 'text-[#ffcc00]' : 'text-[#00b4ff]'} 
+                                            className={selectedNode.type === 'ovx_server' ? 'text-[#76b900]' : selectedNode.type === 'agx_orin_action' ? 'text-[#ff2a2a]' : 'text-[#00b4ff]'} 
                                         />
                                     </div>
                                     <button onClick={() => setSelectedNode(null)} className="text-white/40 hover:text-white bg-white/5 p-3 rounded-full transition-all hover:bg-white/10 text-2xl font-bold">✕</button>
