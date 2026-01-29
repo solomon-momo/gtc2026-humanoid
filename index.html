@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>整合行動系統架構互動圖</title>
+    <title>整合行動系統架構互動圖 - NVIDIA Edition</title>
     <!-- 載入 React 與 Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -26,15 +26,27 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        body {
+            background-color: #000000;
+        }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-[#000000]">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useMemo } = React;
 
-        // 定義內聯 SVG 路徑
+        // NVIDIA 標誌性綠色與科技色調
+        const THEME = {
+            nvidia: "#76b900", // NVIDIA Green
+            interface: "#00b4ff", // Cyber Blue
+            action: "#ffcc00", // Action Amber
+            bg: "#0b0e14", // Dark Background
+            glass: "rgba(255, 255, 255, 0.03)",
+            border: "rgba(255, 255, 255, 0.1)"
+        };
+
         const ICONS = {
             mic: <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v3" />,
             brain: (
@@ -80,15 +92,15 @@
         );
 
         const CANVAS_WIDTH = 1000;
-        const CANVAS_HEIGHT = 560; // 稍微降低高度以壓縮留白
+        const CANVAS_HEIGHT = 580; 
         const CENTER_X = 500;
-        const CENTER_Y = 280;
+        const CENTER_Y = 300;
 
         const initialNodes = [
-            { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 160, y: 180, icon: 'mic', description: '運行於 AGX Orin。接收語音指令並轉化為結構化文本。', details: ['硬體：AGX Orin (Edge)', '低延遲語音辨識', '輸入源：外部麥克風/操作端'] },
-            { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 160, y: 380, icon: 'volume-2', description: '運行於 AGX Orin。將任務狀態以語音形式報告給操作員處理。', details: ['硬體：AGX Orin (Edge)', '語音合成反饋', '狀態回傳：任務成功/失敗通知'] },
-            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'VLA Reasoning', type: 'ovx_server', x: 500, y: CENTER_Y, width: 300, height: 160, icon: 'brain', description: '運行於 OVX Server。核心大腦負責複雜指令理解與高層級任務規劃。', details: ['硬體：OVX Server (Cloud)', '模型：Vision-Language-Action 推理', '職責：全局決策與任務步奏生成'] },
-            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Exec Control Layer', type: 'agx_orin_action', x: 840, y: CENTER_Y, width: 280, height: 220, icon: 'boxes', description: '運行於 AGX Orin。統合物理世界的感知與執行，如 Solomon 辨識與 Isaac 動作。', details: ['硬體：AGX Orin (Edge)', '視覺監控：Solomon 系統', '運動控制：Isaac GR00T 執行', '實時反饋：定期報備物理狀態'] }
+            { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 170, y: 190, icon: 'mic', width: 220, height: 110, description: '邊緣計算層執行語音接收與轉錄。', details: ['硬體：AGX Orin (Edge)', '支援實時語音指令解析'] },
+            { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 170, y: 410, icon: 'volume-2', width: 220, height: 110, description: '將任務最終狀態以語音形式反饋給操作人員。', details: ['硬體：AGX Orin (Edge)', '任務完成度語音報告'] },
+            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'VLA Logic Center', type: 'ovx_server', x: 520, y: CENTER_Y, width: 340, height: 180, icon: 'brain', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server (Cloud)', '技術：VLA 推理模型'] },
+            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Physical Interaction', type: 'agx_orin_action', x: 880, y: CENTER_Y, width: 240, height: 220, icon: 'boxes', description: '邊緣端統合執行系統，整合感知與運動控制。', details: ['硬體：AGX Orin (Edge)', '視覺：Solomon / 動作：Isaac'] }
         ];
 
         const initialConnections = [
@@ -103,86 +115,126 @@
             const [hoveredNode, setHoveredNode] = useState(null);
 
             const activeId = hoveredNode?.id || selectedNode?.id;
+            const isSomethingActive = !!activeId;
+
+            const isRelated = (id) => {
+                if (!activeId) return false;
+                if (activeId === id) return true;
+                return initialConnections.some(c => 
+                    (c.from === activeId && c.to === id) || 
+                    (c.to === activeId && c.from === id)
+                );
+            };
 
             const isEdgeHighlighted = (from, to) => activeId === from || activeId === to;
-            const isRelated = (id) => activeId === id || initialConnections.some(c => (c.from === activeId && c.to === id) || (c.to === activeId && c.from === id));
 
             return (
-                <div className="flex flex-col md:flex-row h-screen w-full bg-slate-50 overflow-hidden font-sans text-slate-800">
-                    <div className="flex-1 relative overflow-auto p-3 flex flex-col items-center no-scrollbar">
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-3 w-full max-w-5xl flex justify-between items-end">
+                <div className="flex flex-col md:flex-row h-screen w-full bg-black overflow-hidden font-sans text-white">
+                    <div className="flex-1 relative overflow-auto p-4 flex flex-col items-center no-scrollbar">
+                        {/* Header & Legend */}
+                        <div className="bg-[#111] p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-white/10 mb-4 w-full max-w-5xl flex justify-between items-center">
                             <div>
-                                <h1 className="text-xl font-black tracking-tight text-slate-800 flex items-center gap-2 leading-none">
-                                    <span className="p-1.5 bg-indigo-600 rounded-lg text-white flex items-center justify-center">
-                                        <Icon name="server" size={18} />
+                                <h1 className="text-2xl font-black tracking-tight flex items-center gap-3 leading-none text-white">
+                                    <span className="p-1.5 bg-[#76b900] rounded-lg text-black flex items-center justify-center shadow-[0_0_15px_rgba(118,185,0,0.6)]">
+                                        <Icon name="server" size={20} />
                                     </span>
-                                    統合行動系統架構 (Edge-to-Server)
+                                    統合行動系統架構
                                 </h1>
-                                <p className="text-xs text-slate-400 font-medium mt-1">邊緣計算 (AGX Orin) ⇄ 伺服器推理 (OVX Server)</p>
+                                <p className="text-[12px] text-slate-400 font-bold mt-2 uppercase tracking-[0.2em] leading-none">Distributed Robotics Infrastructure</p>
                             </div>
-                            <div className="flex gap-3 text-[9px] font-black uppercase text-slate-400">
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-400" /> AGX Orin (I/O)</span>
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> OVX Server</span>
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> AGX Orin (Action)</span>
+                            <div className="flex gap-6 text-[15px] font-black uppercase text-slate-400">
+                                <span className="flex items-center gap-2">
+                                    <div className="flex gap-1">
+                                        <span className="w-3.5 h-3.5 rounded-full bg-[#00b4ff]" />
+                                        <span className="w-3.5 h-3.5 rounded-full bg-[#ffcc00]" />
+                                    </div>
+                                    AGX Orin (Edge)
+                                </span>
+                                <span className="flex items-center gap-2">
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#76b900]" />
+                                    OVX Server
+                                </span>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-[1.5rem] shadow-xl border border-slate-100 p-4">
+                        {/* SVG Canvas */}
+                        <div className="bg-[#050505] rounded-[1.5rem] border border-white/5 p-4 shadow-2xl relative">
                             <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}>
                                 {/* 背景分組提示 */}
-                                <rect x="40" y="60" width="240" height="440" rx="20" fill="#f0f9ff" fillOpacity="0.4" stroke="#bae6fd" />
-                                <text x="160" y="90" textAnchor="middle" className="text-[10px] font-black fill-sky-300 uppercase tracking-widest">AGX Orin - I/O Layer</text>
+                                <rect x="30" y="70" width="280" height="460" rx="20" fill="white" fillOpacity="0.06" stroke="white" strokeOpacity="0.15" />
+                                <text x="170" y="100" textAnchor="middle" className="text-[12px] font-black fill-white/50 uppercase tracking-[0.4em]">Edge Layer</text>
 
-                                <rect x="340" y="60" width="320" height="440" rx="20" fill="#f0fdf4" fillOpacity="0.4" stroke="#bbf7d0" strokeDasharray="5,5" />
-                                <text x="500" y="90" textAnchor="middle" className="text-[10px] font-black fill-green-300 uppercase tracking-widest">OVX Server Core</text>
+                                <rect x="320" y="70" width="370" height="460" rx="20" fill="#76b900" fillOpacity="0.04" stroke="#76b900" strokeOpacity="0.25" strokeDasharray="5,5" />
+                                <text x="505" y="100" textAnchor="middle" className="text-[12px] font-black fill-[#76b900]/60 uppercase tracking-[0.4em]">Cloud Reasoning</text>
 
-                                <rect x="700" y="60" width="280" height="440" rx="20" fill="#fffcf0" fillOpacity="0.3" stroke="#fef3c7" />
-                                <text x="840" y="90" textAnchor="middle" className="text-[10px] font-black fill-amber-200 uppercase tracking-widest">AGX Orin - Action Zone</text>
+                                <rect x="710" y="70" width="280" height="460" rx="20" fill="#ffcc00" fillOpacity="0.03" stroke="#ffcc00" strokeOpacity="0.2" />
+                                <text x="850" y="100" textAnchor="middle" className="text-[12px] font-black fill-[#ffcc00]/50 uppercase tracking-[0.4em]">Action Hub</text>
 
                                 {initialConnections.map((conn, idx) => {
                                     const from = initialNodes.find(n => n.id === conn.from);
                                     const to = initialNodes.find(n => n.id === conn.to);
                                     const high = isEdgeHighlighted(conn.from, conn.to);
+                                    const dimmed = isSomethingActive && !high;
+                                    
                                     const midX = (from.x + to.x) / 2;
-                                    const midY = (from.y + to.y) / 2 + (conn.type === 'verify' ? 30 : -20);
+                                    const midY = (from.y + to.y) / 2 + (conn.type === 'verify' ? 35 : -25);
                                     const pathD = `M ${from.x} ${from.y} Q ${midX} ${midY}, ${to.x} ${to.y}`;
                                     
-                                    let activeColor = '#3b82f6';
-                                    if (from.type === 'ovx_server' || to.type === 'ovx_server') activeColor = '#22c55e';
-                                    if (conn.type === 'verify') activeColor = '#f59e0b';
+                                    let activeColor = THEME.interface;
+                                    if (from.type === 'ovx_server' || to.type === 'ovx_server') activeColor = THEME.nvidia;
+                                    if (conn.type === 'verify') activeColor = THEME.action;
 
                                     return (
-                                        <g key={idx}>
-                                            <path d={pathD} fill="none" stroke={high ? activeColor : '#e2e8f0'} strokeWidth={high ? 3 : 2} strokeDasharray={conn.type === 'verify' ? "5,3" : "none"} className="transition-all duration-300" />
+                                        <g key={idx} className="transition-all duration-300" opacity={dimmed ? 0.08 : 1}>
+                                            <path d={pathD} fill="none" stroke={high ? activeColor : 'rgba(255,255,255,0.2)'} strokeWidth={high ? 5 : 2} strokeDasharray={conn.type === 'verify' ? "6,4" : "none"} />
                                             {high && (
-                                                <circle r={4} fill={activeColor}>
+                                                <circle r={6} fill={activeColor} style={{ filter: `drop-shadow(0 0 12px ${activeColor})` }}>
                                                     <animateMotion dur="1s" repeatCount="indefinite" path={pathD} />
                                                 </circle>
                                             )}
                                         </g>
                                     );
                                 })}
+
                                 {initialNodes.map(node => {
                                     const w = node.width || 160; const h = node.height || 80;
                                     const active = isRelated(node.id);
                                     const isSel = selectedNode?.id === node.id;
-                                    let color = "#3b82f6";
-                                    if(node.type === 'ovx_server') color = "#22c55e";
-                                    if(node.type === 'agx_orin_action') color = "#f59e0b";
+                                    const dimmed = isSomethingActive && !active;
+
+                                    let nodeColor = THEME.interface;
+                                    if(node.type === 'ovx_server') nodeColor = THEME.nvidia;
+                                    if(node.type === 'agx_orin_action') nodeColor = THEME.action;
+
+                                    const isHighlighted = active || isSel;
+
                                     return (
-                                        <g key={node.id} transform={`translate(${node.x - w/2}, ${node.y - h/2})`} 
+                                        <g key={node.id} 
+                                            transform={`translate(${node.x - w/2}, ${node.y - h/2})`} 
                                             onClick={() => setSelectedNode(node)} 
                                             onMouseEnter={() => setHoveredNode(node)} 
                                             onMouseLeave={() => setHoveredNode(null)} 
-                                            className="cursor-pointer">
-                                            <rect width={w} height={h} rx={12} fill="white" stroke={active || isSel ? color : "#cbd5e1"} strokeWidth={active || isSel ? 4 : 2} className="transition-all duration-300 shadow-sm" />
+                                            className="cursor-pointer transition-all duration-300"
+                                            opacity={dimmed ? 0.25 : 1}
+                                        >
+                                            {/* Glow Effect */}
+                                            {isHighlighted && (
+                                                <rect width={w} height={h} rx={14} fill={nodeColor} fillOpacity="0.3" style={{ filter: `blur(25px)` }} />
+                                            )}
+                                            
+                                            <rect width={w} height={h} rx={14} fill="#0d0d0d" stroke={nodeColor} strokeWidth={isHighlighted ? 5 : 3} className="shadow-2xl" />
+                                            
                                             <foreignObject width={w} height={h} className="pointer-events-none">
-                                                <div className="flex flex-col items-center justify-center h-full text-center px-2">
-                                                    <div className={active || isSel ? (node.type === 'ovx_server' ? "text-green-600" : "text-blue-600") : "text-slate-400"}>
-                                                        <Icon name={node.icon} size={28} />
+                                                <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                                                    <div className={`transition-all duration-300 ${isHighlighted ? "scale-115" : ""}`} style={{ color: nodeColor }}>
+                                                        <Icon name={node.icon} size={36} />
                                                     </div>
-                                                    <div className="text-[14px] font-bold mt-1.5 leading-tight">{node.label}</div>
-                                                    <div className="text-[11px] text-slate-400 font-medium">{node.subTitle}</div>
+                                                    <div className={`text-[20px] font-black mt-2 leading-none tracking-tight transition-all duration-300 text-white uppercase`}>
+                                                        {node.label}
+                                                    </div>
+                                                    <div className={`text-[14px] font-bold mt-1 uppercase tracking-widest transition-all duration-300`} style={{ color: nodeColor, opacity: 0.8 }}>
+                                                        {node.subTitle}
+                                                    </div>
                                                 </div>
                                             </foreignObject>
                                         </g>
@@ -192,27 +244,34 @@
                         </div>
                     </div>
 
-                    <div className={`w-full md:w-96 bg-white border-l border-slate-200 shadow-2xl transition-all duration-500 ${selectedNode ? 'translate-x-0' : 'translate-x-full md:hidden'}`}>
+                    {/* Details Panel */}
+                    <div className={`w-full md:w-[480px] bg-[#0b0e14] border-l border-white/5 shadow-2xl transition-all duration-500 ${selectedNode ? 'translate-x-0' : 'translate-x-full md:hidden'}`}>
                         {selectedNode ? (
-                            <div className="p-6 h-full overflow-y-auto no-scrollbar">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div className={`p-4 rounded-2xl ${selectedNode.type === 'ovx_server' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center`}>
-                                        <Icon name={selectedNode.icon} size={32} />
+                            <div className="p-10 h-full overflow-y-auto no-scrollbar">
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className={`p-5 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl`}>
+                                        <Icon 
+                                            name={selectedNode.icon} 
+                                            size={54} 
+                                            className={selectedNode.type === 'ovx_server' ? 'text-[#76b900]' : selectedNode.type === 'agx_orin_action' ? 'text-[#ffcc00]' : 'text-[#00b4ff]'} 
+                                        />
                                     </div>
-                                    <button onClick={() => setSelectedNode(null)} className="text-slate-300 hover:text-slate-800 bg-slate-50 p-2 rounded-full transition-colors font-bold">✕</button>
+                                    <button onClick={() => setSelectedNode(null)} className="text-white/40 hover:text-white bg-white/5 p-3 rounded-full transition-all hover:bg-white/10 text-2xl font-bold">✕</button>
                                 </div>
-                                <h2 className="text-2xl font-black text-slate-800 mb-1 leading-tight">{selectedNode.label}</h2>
-                                <p className="text-xs font-bold text-blue-500 mb-5 uppercase tracking-widest">
-                                    {selectedNode.type === 'ovx_server' ? 'OVX Server Core' : 'AGX Orin Edge'}
+                                <h2 className="text-5xl font-black text-white mb-2 leading-tight tracking-tighter">{selectedNode.label}</h2>
+                                <p className={`text-base font-black uppercase tracking-[0.3em] mb-8 ${selectedNode.type === 'ovx_server' ? 'text-[#76b900]' : 'text-slate-400'}`}>
+                                    {selectedNode.type === 'ovx_server' ? 'OVX Server Processing' : 'Edge Computing Architecture'}
                                 </p>
-                                <div className="space-y-5">
-                                    <div className="bg-slate-50 p-4 rounded-xl text-sm text-slate-600 font-semibold italic leading-relaxed">"{selectedNode.description}"</div>
+                                <div className="space-y-8">
+                                    <div className="bg-white/5 border border-white/10 p-7 rounded-2xl text-xl text-white/90 font-bold italic leading-relaxed">
+                                        "{selectedNode.description}"
+                                    </div>
                                     {selectedNode.details && (
-                                        <div className="space-y-2">
+                                        <div className="space-y-4">
                                             {selectedNode.details.map((d, i) => (
-                                                <div key={i} className="flex items-start gap-3 bg-white border border-slate-100 p-3 rounded-xl text-xs font-bold shadow-sm">
-                                                    <div className="text-green-500 mt-0.5"><Icon name="check-circle-2" size={16} /></div>
-                                                    <span className="leading-normal">{d}</span>
+                                                <div key={i} className="flex items-start gap-5 bg-[#111] border border-white/10 p-6 rounded-2xl text-base font-black shadow-lg transition-transform hover:translate-x-2">
+                                                    <div className="text-[#76b900] mt-1"><Icon name="check-circle-2" size={24} /></div>
+                                                    <span className="leading-normal text-white/95">{d}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -220,9 +279,10 @@
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-slate-300 p-8 text-center">
-                                <div className="opacity-10 mb-4 animate-pulse"><Icon name="activity" size={56} /></div>
-                                <p className="text-sm font-black uppercase tracking-widest leading-loose text-slate-400">請點擊架構組件</p>
+                            <div className="flex flex-col items-center justify-center h-full text-white/10 p-12 text-center">
+                                <div className="mb-8 animate-pulse text-[#76b900]/30"><Icon name="brain" size={140} /></div>
+                                <p className="text-2xl font-black uppercase tracking-[0.5em] text-white/20">System Insight</p>
+                                <p className="text-base font-bold opacity-30 mt-4 tracking-widest text-white/40">Hover a component to inspect data paths</p>
                             </div>
                         )}
                     </div>
