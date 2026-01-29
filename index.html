@@ -107,10 +107,10 @@
         const CENTER_Y = 300;
 
         const initialNodes = [
-            { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 170, y: 190, icon: 'mic', width: 220, height: 110, description: '邊緣計算層執行語音接收與轉錄。', details: ['硬體：AGX Orin (Edge)', '支援實時語音指令解析'] },
-            { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 170, y: 410, icon: 'volume-2', width: 220, height: 110, description: '將任務最終狀態以語音形式反饋給操作人員。', details: ['硬體：AGX Orin (Edge)', '任務完成度語音報告'] },
-            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'Reason Logic Center', type: 'ovx_server', x: 505, y: CENTER_Y, width: 340, height: 180, icon: 'cosmos', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server (Cloud)', '技術：VLA 推理模型'] },
-            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Physical Interaction', type: 'agx_orin_action', x: 850, y: CENTER_Y, width: 240, height: 220, icon: 'boxes', description: '邊緣端統合執行系統，整合感知與運動控制。', details: ['硬體：AGX Orin (Edge)', '視覺：Solomon / 動作：Isaac'] }
+            { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 170, y: 190, icon: 'mic', width: 220, height: 110, description: '邊緣計算層執行語音接收與轉錄。', details: ['硬體：AGX Orin', '支援實時語音指令解析'] },
+            { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 170, y: 410, icon: 'volume-2', width: 220, height: 110, description: '將任務最終狀態以語音形式反饋給操作人員。', details: ['硬體：AGX Orin', '任務完成度語音報告'] },
+            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'Reason Logic Center', type: 'ovx_server', x: 505, y: CENTER_Y, width: 340, height: 180, icon: 'cosmos', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server', '技術：Cosmos Reason 2模型'] },
+            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Physical Interaction', type: 'agx_orin_action', x: 850, y: CENTER_Y, width: 240, height: 220, icon: 'boxes', description: '邊緣端統合執行系統，整合感知與運動控制。', details: ['硬體：AGX Orin', '視覺：Solomon SuperVision','動作：Nav / Isaac GR00T N1.6'] }
         ];
 
         const initialConnections = [
