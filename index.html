@@ -37,7 +37,7 @@
     <script type="text/babel">
         const { useState, useMemo } = React;
 
-        // NVIDIA 標誌性綠色與科技色調
+        // NVIDIA 標誌性配色
         const THEME = {
             nvidia: "#76b900", // NVIDIA Green
             interface: "#00b4ff", // Cyber Blue
@@ -49,12 +49,6 @@
 
         const ICONS = {
             mic: <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v3" />,
-            brain: (
-                <g>
-                    <path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.96.46 2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 12 4.5Z"/>
-                    <path d="M12 8c0-3.5 7-3.5 7 0s-7 3.5-7 7 M12 8c0-3.5-7-3.5-7 0s7 3.5 7 7 M12 4.5V8 M12 15v3"/>
-                </g>
-            ),
             boxes: <path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-10l-4 2.4v4l-3-1.8v-4l-2.03 1.22ZM21 14.63v3.24a2 2 0 0 1-.97 1.71l-3 1.8a2 2 0 0 1-2.06 0L12 19v-10l4 2.4v4l3-1.8v-4l2.03 1.22ZM12 12l8.73-5.24a2 2 0 0 0 0-3.52L12.27 1a2 2 0 0 0-1.54 0L2.27 3.24a2 2 0 0 0 0 3.52L11 12.1v-.1Z" />,
             "volume-2": (
                 <g>
@@ -85,11 +79,27 @@
             )
         };
 
-        const Icon = ({ name, size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {ICONS[name]}
-            </svg>
-        );
+        // --- 核心修改位置：Icon 組件支援圖片 ---
+        const Icon = ({ name, size = 24, className = "" }) => {
+            // 如果名稱是 cosmos，載入圖片檔案
+            if (name === 'cosmos') {
+                return (
+                    <img 
+                        src="image_cosmos.png" 
+                        style={{ width: size * 1.2, height: size * 1.2, objectFit: 'contain' }} 
+                        className={className} 
+                        alt="Cosmos Icon"
+                        onError={(e) => { e.target.src = "https://via.placeholder.com/100?text=Icon+Error"; }}
+                    />
+                );
+            }
+            // 否則載入標準 SVG
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {ICONS[name]}
+                </svg>
+            );
+        };
 
         const CANVAS_WIDTH = 1000;
         const CANVAS_HEIGHT = 580; 
@@ -99,8 +109,8 @@
         const initialNodes = [
             { id: 'stt', label: 'STT Input', subTitle: 'Speech-To-Text', type: 'agx_orin', x: 170, y: 190, icon: 'mic', width: 220, height: 110, description: '邊緣計算層執行語音接收與轉錄。', details: ['硬體：AGX Orin (Edge)', '支援實時語音指令解析'] },
             { id: 'tts', label: 'TTS Output', subTitle: 'Status Reporting', type: 'agx_orin', x: 170, y: 410, icon: 'volume-2', width: 220, height: 110, description: '將任務最終狀態以語音形式反饋給操作人員。', details: ['硬體：AGX Orin (Edge)', '任務完成度語音報告'] },
-            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'VLA Logic Center', type: 'ovx_server', x: 520, y: CENTER_Y, width: 340, height: 180, icon: 'brain', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server (Cloud)', '技術：VLA 推理模型'] },
-            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Physical Interaction', type: 'agx_orin_action', x: 880, y: CENTER_Y, width: 240, height: 220, icon: 'boxes', description: '邊緣端統合執行系統，整合感知與運動控制。', details: ['硬體：AGX Orin (Edge)', '視覺：Solomon / 動作：Isaac'] }
+            { id: 'cosmos_core', label: 'NVIDIA Cosmos Reason Core', subTitle: 'VLA Logic Center', type: 'ovx_server', x: 505, y: CENTER_Y, width: 340, height: 180, icon: 'cosmos', description: 'OVX 伺服器上的大語言模型核心，負責所有高階邏輯推理。', details: ['硬體：OVX Server (Cloud)', '技術：VLA 推理模型'] },
+            { id: 'integrated_action', label: 'Integrated Action System', subTitle: 'Physical Interaction', type: 'agx_orin_action', x: 850, y: CENTER_Y, width: 240, height: 220, icon: 'boxes', description: '邊緣端統合執行系統，整合感知與運動控制。', details: ['硬體：AGX Orin (Edge)', '視覺：Solomon / 動作：Isaac'] }
         ];
 
         const initialConnections = [
@@ -160,7 +170,7 @@
                         {/* SVG Canvas */}
                         <div className="bg-[#050505] rounded-[1.5rem] border border-white/5 p-4 shadow-2xl relative">
                             <svg width={CANVAS_WIDTH} height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}>
-                                {/* 背景分組提示 */}
+                                {/* 背景裝飾 */}
                                 <rect x="30" y="70" width="280" height="460" rx="20" fill="white" fillOpacity="0.06" stroke="white" strokeOpacity="0.15" />
                                 <text x="170" y="100" textAnchor="middle" className="text-[12px] font-black fill-white/50 uppercase tracking-[0.4em]">Edge Layer</text>
 
@@ -226,7 +236,7 @@
                                             
                                             <foreignObject width={w} height={h} className="pointer-events-none">
                                                 <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                                                    <div className={`transition-all duration-300 ${isHighlighted ? "scale-115" : ""}`} style={{ color: nodeColor }}>
+                                                    <div className={`flex items-center justify-center transition-all duration-300 ${isHighlighted ? "scale-110" : ""}`} style={{ color: nodeColor }}>
                                                         <Icon name={node.icon} size={36} />
                                                     </div>
                                                     <div className={`text-[20px] font-black mt-2 leading-none tracking-tight transition-all duration-300 text-white uppercase`}>
@@ -249,7 +259,7 @@
                         {selectedNode ? (
                             <div className="p-10 h-full overflow-y-auto no-scrollbar">
                                 <div className="flex justify-between items-start mb-8">
-                                    <div className={`p-5 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl`}>
+                                    <div className={`p-5 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl overflow-hidden`}>
                                         <Icon 
                                             name={selectedNode.icon} 
                                             size={54} 
@@ -280,7 +290,9 @@
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-white/10 p-12 text-center">
-                                <div className="mb-8 animate-pulse text-[#76b900]/30"><Icon name="brain" size={140} /></div>
+                                <div className="mb-8 animate-pulse text-[#76b900]/30 flex items-center justify-center">
+                                    <Icon name="cosmos" size={140} />
+                                </div>
                                 <p className="text-2xl font-black uppercase tracking-[0.5em] text-white/20">System Insight</p>
                                 <p className="text-base font-bold opacity-30 mt-4 tracking-widest text-white/40">Hover a component to inspect data paths</p>
                             </div>
